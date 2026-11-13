@@ -8,8 +8,10 @@
 struct ListaCompras{
     std::vector<std::string> codigoClientes;
     std::map<std::string, int> indiceClientes;
+
     std::vector<std::string> produtos;
     std::map<std::string, int> indiceProdutos;
+        
     std::vector<std::vector<int>> compras;
 };
 
