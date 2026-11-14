@@ -13,8 +13,8 @@ struct ListaCompras{
     std::map<std::string, int> indiceProdutos;
         
     std::vector<std::vector<int>> compras;
-};
+} ListaCompra;
 
-void lerDados(std::string caminho, ListaCompras* lista);
+int lerDados(char *caminho, ListaCompras *lista);
 
 #endif
