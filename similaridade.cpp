@@ -1,102 +1,131 @@
+#include <stdlib.h>
 #include "similaridade.h"
 
-void montarMatrizCompras(const ListaCompras& lista, std::vector<std::vector<int>>& matrizCompras) {
+using namespace std;
+
+int **alocarMatrizInt(int linhas, int colunas) {
+    int **matriz = (int **) malloc(linhas * sizeof(int *));
+
+    for (int i = 0; i < linhas; i++) {
+        matriz[i] = (int *) malloc(colunas * sizeof(int));
+
+        for (int j = 0; j < colunas; j++) {
+            matriz[i][j] = 0;
+        }
+    }
+
+    return matriz;
+}
+
+double **alocarMatrizDouble(int linhas, int colunas) {
+    double **matriz = (double **) malloc(linhas * sizeof(double *));
+
+    for (int i = 0; i < linhas; i++) {
+        matriz[i] = (double *) malloc(colunas * sizeof(double));
+
+        for (int j = 0; j < colunas; j++) {
+            matriz[i][j] = 0.0;
+        }
+    }
+
+    return matriz;
+}
+
+void liberarMatrizInt(int **matriz, int linhas) {
+    for (int i = 0; i < linhas; i++) {
+        free(matriz[i]);
+    }
+    free(matriz);
+}
+
+void liberarMatrizDouble(double **matriz, int linhas) {
+    for (int i = 0; i < linhas; i++) {
+        free(matriz[i]);
+    }
+    free(matriz);
+}
+
+int **montarMatrizCompras(const ListaCompras& lista) {
     int numClientes = lista.codigoClientes.size();
     int numProdutos = lista.produtos.size();
-    matrizCompras.assign(numClientes, std::vector<int>(numProdutos, 0));
 
-    for (int i = 0; i < numClientes; ++i) {
+    int **matrizCompras = alocarMatrizInt(numClientes, numProdutos);
+
+    for (int i = 0; i < numClientes; i++) {
         for (int p: lista.compras[i]) {
             matrizCompras[i][p] = 1;
         }
     }
+
+    return matrizCompras;
 }
 
-void transposta(const std::vector<std::vector<int>>& matriz, std::vector<std::vector<int>>& matrizTransposta) {
-    int linhas = matriz.size();
+int **transposta(int **matriz, int linhas, int colunas) {
+    int **matrizTransposta = alocarMatrizInt(colunas, linhas);
 
-    if (linhas == 0) {
-        matrizTransposta.clear();
-        return;
-    }
-
-    int colunas = matriz[0].size();
-    matrizTransposta.assign(colunas, std::vector<int>(linhas, 0));
-
-    for (int i = 0; i < linhas; ++i) {
-        for (int j = 0; j < colunas; ++j) {
+    for (int i = 0; i < linhas; i++) {
+        for (int j = 0; j < colunas; j++) {
             matrizTransposta[j][i] = matriz[i][j];
         }
     }
+
+    return matrizTransposta;
 }
 
-void multiplicar(const std::vector<std::vector<int>>& matrizA, const std::vector<std::vector<int>>& matrizB, std::vector<std::vector<int>>& resultado) {
-    int linhasA = matrizA.size();
-    int linhasB = matrizB.size();
+int **multiplicar(int **matrizA, int **matrizB, int linhasA, int colunasA, int colunasB) {
+    int **resultado = alocarMatrizInt(linhasA, colunasB);
 
-    if (linhasA == 0 || linhasB == 0) {
-        resultado.clear();
-        return;
-    }
-
-    int colunasA = matrizA[0].size();
-    int colunasB = matrizB[0].size();
-
-    if (colunasA != linhasB) {
-        resultado.clear();
-        return;
-    }
-
-    resultado.assign(linhasA, std::vector<int>(colunasB, 0));
-
-    for (int i = 0; i < linhasA; ++i) {
-        for (int j = 0; j < colunasB; ++j) {
-            for (int k = 0; k < colunasA; ++k) {
+    for (int i = 0; i < linhasA; i++) {
+        for (int j = 0; j < colunasB; j++) {
+            for (int k = 0; k < colunasA; k++) {
                 resultado[i][j] += matrizA[i][k] * matrizB[k][j];
             }
         }
     }
+
+    return resultado;
 }
 
-void calcularSimilaridade(const ListaCompras& lista, std::vector<std::vector<double>>& matrizSimilaridade) {
-    std::vector<std::vector<int>> matrizCompras;
-    montarMatrizCompras(lista, matrizCompras);
-
-    std::vector<std::vector<int>> matrizTransposta;
-    transposta(matrizCompras, matrizTransposta);
-
-    std::vector<std::vector<int>> produtoInterno;
-    multiplicar(matrizCompras, matrizTransposta, produtoInterno);
-
+double **calcularSimilaridade(const ListaCompras& lista) {
     int numClientes = lista.codigoClientes.size();
-    matrizSimilaridade.assign(numClientes, std::vector<double>(numClientes, 0.0));
+    int numProdutos = lista.produtos.size();
 
-    for (int i = 0; i < numClientes; ++i) {
-        for (int j = 0; j < numClientes; ++j) {
+    int **matrizCompras = montarMatrizCompras(lista);
+    int **matrizTransposta = transposta(matrizCompras, numClientes, numProdutos);
+    int **matrizProduto = multiplicar(matrizCompras, matrizTransposta, numClientes, numProdutos, numClientes);
 
-            int intersecao = produtoInterno[i][j];
-            int totalComprasI = produtoInterno[i][i];
-            
+    double **matrizSimilaridade = alocarMatrizDouble(numClientes, numClientes);
+
+    for (int i = 0; i < numClientes; i++) {
+        for (int j = 0; j < numClientes; j++) {
+            int intersecao = matrizProduto[i][j];
+            int totalComprasI = matrizProduto[i][i];
 
             if (totalComprasI > 0) {
-                matrizSimilaridade[i][j] = 1 - (double)intersecao / totalComprasI;
+                matrizSimilaridade[i][j] = 1 - (double) intersecao / totalComprasI;
             } else {
                 matrizSimilaridade[i][j] = 1.0;
             }
         }
     }
+
+    liberarMatrizInt(matrizCompras, numClientes);
+    liberarMatrizInt(matrizTransposta, numProdutos);
+    liberarMatrizInt(matrizProduto, numClientes);
+
+    return matrizSimilaridade;
 }
 
-int clienteMaisSimilar(const std::vector<std::vector<double>>& matrizSimilaridade, int clienteIndex) {
-    int numClientes = matrizSimilaridade.size();
-    if (clienteIndex < 0 || clienteIndex >= numClientes) {
-        return -1;
-    }
+int clienteMaisSimilar(double **matrizSimilaridade, int numClientes, int clienteIndex) {
 
+    if (clienteIndex < 0 || clienteIndex >= numClientes) {
+        return -1; 
+    }
+    
     double menorSimilaridade = 1.0;
     int clienteMaisSimilarIndex = -1;
 
-    for (int j = 0; j < numClientes; ++j) {
+    for (int j = 0; j < numClientes; j++) {
         if (j != clienteIndex && matrizSimilaridade[clienteIndex][j] < menorSimilaridade) {
             menorSimilaridade = matrizSimilaridade[clienteIndex][j];
             clienteMaisSimilarIndex = j;

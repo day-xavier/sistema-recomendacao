@@ -2,14 +2,22 @@
 #define SIMILARIDADE_H
 #include "listaCompras.h"
 
-void montarMatrizCompras(const ListaCompras& lista, std::vector<std::vector<int>>& matrizCompras);
+int **alocarMatrizInt(int linhas, int colunas);
 
-void transposta(const std::vector<std::vector<int>>& matriz, std::vector<std::vector<int>>& matrizTransposta);
+double **alocarMatrizDouble(int linhas, int colunas);
 
-void multiplicar(const std::vector<std::vector<int>>& matrizA, const std::vector<std::vector<int>>& matrizB, std::vector<std::vector<int>>& resultado);
+void liberarMatrizInt(int **matriz, int linhas);
 
-void calcularSimilaridade(const ListaCompras& lista, std::vector<std::vector<double>>& matrizSimilaridade);
+void liberarMatrizDouble(double **matriz, int linhas);
 
-int clienteMaisSimilar(const std::vector<std::vector<double>>& matrizSimilaridade, int clienteIndex);
+int **montarMatrizCompras(const ListaCompras& lista);
+
+int **transposta(int **matriz, int linhas, int colunas);
+
+int **multiplicar(int **matrizA, int **matrizB, int linhasA, int colunasA, int colunasB);
+
+double **calcularSimilaridade(const ListaCompras& lista);
+
+int clienteMaisSimilar(double **matrizSimilaridade, int numClientes, int clienteIndex);
 
 #endif
