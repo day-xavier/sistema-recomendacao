@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-struct ListaCompras{
+typedef struct{
     std::vector<std::string> codigoClientes;
     std::map<std::string, int> indiceClientes;
 
@@ -13,8 +13,9 @@ struct ListaCompras{
     std::map<std::string, int> indiceProdutos;
         
     std::vector<std::vector<int>> compras;
-} ListaCompra;
+} ListaCompras;
 
 int lerDados(char *caminho, ListaCompras *lista);
+void printarCompras(ListaCompras *lista, char *codCliente);
 
 #endif

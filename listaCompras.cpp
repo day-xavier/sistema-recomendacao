@@ -1,5 +1,6 @@
 #include "listaCompras.h"
 #include <stdio.h>
+#include <iostream>
 
 int lerDados(char *caminho, ListaCompras *lista) {
     FILE *arquivo = fopen(caminho, "r");
@@ -38,7 +39,7 @@ int lerDados(char *caminho, ListaCompras *lista) {
     arquivo = fopen(caminho, "r");
     if (arquivo == NULL) {
         printf("Erro ao reabrir o arquivo %s\n", caminho);
-        return 1;
+        return 0;
     }
 
     fscanf(arquivo, "%*[^\n]");
@@ -62,4 +63,22 @@ int lerDados(char *caminho, ListaCompras *lista) {
 
     fclose(arquivo);
     return 1;
+}
+
+void printarCompras(ListaCompras *lista, char *codCliente) {
+    std::string cod(codCliente);
+
+    if (lista->indiceClientes.find(cod) == lista->indiceClientes.end()) {
+        printf("Cliente %s nao encontrado\n\n", codCliente);
+        return;
+    }
+
+    int indiceC = lista->indiceClientes[cod];
+
+    printf("Produtos comprados pelo cliente %s:\n", codCliente);
+    for (int i = 0; i < (int) lista->compras[indiceC].size(); i++) {
+        int indiceP = lista->compras[indiceC][i];
+        std::cout << "  - " << lista->produtos[indiceP] << "\n";
+    }
+    printf("\n");
 }
