@@ -3,30 +3,41 @@
 #include "similaridade.h"
 #include "listaCompras.h"
 
+using namespace std;
+
 int main() {
 
     ListaCompras lista;
 
-    lerDados("dados/dados/dados_venda_cluster_17.csv", &lista);
-    
-    std::cout << "Numero de clientes: " << lista.codigoClientes.size() << std::endl;
-    std::cout << "Numero de produtos: " << lista.produtos.size() << std::endl;
+    char caminho[] = "dados/dados/dados_venda_cluster_17.csv";
 
-    std::vector<std::vector<double>> matrizSimilaridade;
-    calcularSimilaridade(lista, matrizSimilaridade);
+    if (lerDados(caminho, &lista) == 0) {
+        return 1;
+    }
 
-    std::vector<int> testes = {0, 1, 2, 3};
+    cout << "Numero de clientes: " << lista.codigoClientes.size() << endl;
+    cout << "Numero de produtos: " << lista.produtos.size() << endl;
+
+    int numClientes = lista.codigoClientes.size();
+    double **matrizSimilaridade = calcularSimilaridade(lista);
+
+    vector<int> testes = {0, 1, 2, 3};
 
     for (int clienteIndex : testes) {
-        int clienteMaisSimilarIndex = clienteMaisSimilar(matrizSimilaridade, clienteIndex);
+        int clienteMaisSimilarIndex = clienteMaisSimilar(matrizSimilaridade, numClientes, clienteIndex);
 
         if (clienteMaisSimilarIndex != -1) {
-            std::cout << "Cliente mais similar ao cliente " << lista.codigoClientes[clienteIndex] << ": " 
-                      << lista.codigoClientes[clienteMaisSimilarIndex] << " (S = " << matrizSimilaridade[clienteIndex][clienteMaisSimilarIndex] << ")" << std::endl;
+            cout << "Cliente mais similar ao cliente " << lista.codigoClientes[clienteIndex] << ": " 
+                      << lista.codigoClientes[clienteMaisSimilarIndex] << " (S = " << matrizSimilaridade[clienteIndex][clienteMaisSimilarIndex] << ")" << endl;
         } else {
-            std::cout << "Cliente " << lista.codigoClientes[clienteIndex] << " nao possui clientes similares." << std::endl;
+            cout << "Cliente " << lista.codigoClientes[clienteIndex] << " nao possui clientes similares." << endl;
         }
     }
+
+    for (int i = 0; i < numClientes; i++) {
+        free(matrizSimilaridade[i]);
+    }
+    free(matrizSimilaridade);
 
     return 0;
 }
