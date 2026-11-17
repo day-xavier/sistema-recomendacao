@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <algorithm>
 
-int *analogos(double **matrizSimilaridade, int clientes, int indiceCliente, int *numAnalogos){
+int *analogos(float **matrizSimilaridade, int clientes, int indiceCliente, int *numAnalogos){
     int *vetorAnalogos = (int *) malloc(clientes* sizeof(int));
 
     int contador = 0;
@@ -45,10 +45,10 @@ Ranking *criarRank(int numProd){
     return rank;
 }
 
-void atualizarRank(ListaCompras *lista, double **matrizSimilaridade, int indiceCliente, int *vetorAnalogos, int numAnalogos, int *vetorAdquiridos, Ranking *rank){
+void atualizarRank(ListaCompras *lista, float **matrizSimilaridade, int indiceCliente, int *vetorAnalogos, int numAnalogos, int *vetorAdquiridos, Ranking *rank){
     for (int i = 0; i < numAnalogos; i++) {
         int vizinho = vetorAnalogos[i];
-        double similaridade = matrizSimilaridade[indiceCliente][vizinho];
+        float similaridade = matrizSimilaridade[indiceCliente][vizinho];
 
         for (int j = 0; j < (int)lista->compras[vizinho].size(); j++) {
             int produto = lista->compras[vizinho][j];
@@ -79,7 +79,7 @@ Ranking *ordenarRank(Ranking *rank, int tamanho, int k, int *vetorAdquiridos, in
     return rank;
 }
 
-int *recomendar(ListaCompras *lista, double **matrizSimilaridade, int indiceCliente, int k, int *tamanho){
+int *recomendar(ListaCompras *lista, float **matrizSimilaridade, int indiceCliente, int k, int *tamanho){
     int numClientes = lista->codigoClientes.size();
     int numProdutos = lista->produtos.size();
 

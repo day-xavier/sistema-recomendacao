@@ -19,7 +19,7 @@ int main() {
     cout << "Numero de produtos: " << lista.produtos.size() << endl;
 
     int numClientes = lista.codigoClientes.size();
-    double **matrizSimilaridade = calcularSimilaridade(lista);
+    float **matrizSimilaridade = calcularSimilaridade(lista);
 
     vector<int> testes = {0, 1, 2, 3};
 

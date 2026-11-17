@@ -21,7 +21,7 @@ int main() {
     cout << "Numero de produtos: " << lista.produtos.size() << endl;
 
     int numClientes = lista.codigoClientes.size();
-    double **matrizSimilaridade = calcularSimilaridade(lista);
+    float **matrizSimilaridade = calcularSimilaridade(lista);
     
     int k = 3;
 
@@ -49,7 +49,7 @@ int main() {
         }
     }
 
-    liberarMatrizDouble(matrizSimilaridade, numClientes);
+    liberarMatrizFloat(matrizSimilaridade, numClientes);
 
     return 0;
 }

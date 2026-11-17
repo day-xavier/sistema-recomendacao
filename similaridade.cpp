@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int **alocarMatrizInt(int linhas, int colunas) {
+int **novaMatrizInt(int linhas, int colunas) {
     int **matriz = (int **) malloc(linhas * sizeof(int *));
 
     for (int i = 0; i < linhas; i++) {
@@ -17,11 +17,11 @@ int **alocarMatrizInt(int linhas, int colunas) {
     return matriz;
 }
 
-double **alocarMatrizDouble(int linhas, int colunas) {
-    double **matriz = (double **) malloc(linhas * sizeof(double *));
+float **novaMatrizFloat(int linhas, int colunas) {
+    float **matriz = (float **) malloc(linhas * sizeof(float *));
 
     for (int i = 0; i < linhas; i++) {
-        matriz[i] = (double *) malloc(colunas * sizeof(double));
+        matriz[i] = (float *) malloc(colunas * sizeof(float));
 
         for (int j = 0; j < colunas; j++) {
             matriz[i][j] = 0.0;
@@ -38,7 +38,7 @@ void liberarMatrizInt(int **matriz, int linhas) {
     free(matriz);
 }
 
-void liberarMatrizDouble(double **matriz, int linhas) {
+void liberarMatrizFloat(float **matriz, int linhas) {
     for (int i = 0; i < linhas; i++) {
         free(matriz[i]);
     }
@@ -49,7 +49,7 @@ int **montarMatrizCompras(const ListaCompras& lista) {
     int numClientes = lista.codigoClientes.size();
     int numProdutos = lista.produtos.size();
 
-    int **matrizCompras = alocarMatrizInt(numClientes, numProdutos);
+    int **matrizCompras = novaMatrizInt(numClientes, numProdutos);
 
     for (int i = 0; i < numClientes; i++) {
         for (int p: lista.compras[i]) {
@@ -61,7 +61,7 @@ int **montarMatrizCompras(const ListaCompras& lista) {
 }
 
 int **transposta(int **matriz, int linhas, int colunas) {
-    int **matrizTransposta = alocarMatrizInt(colunas, linhas);
+    int **matrizTransposta = novaMatrizInt(colunas, linhas);
 
     for (int i = 0; i < linhas; i++) {
         for (int j = 0; j < colunas; j++) {
@@ -73,7 +73,7 @@ int **transposta(int **matriz, int linhas, int colunas) {
 }
 
 int **multiplicar(int **matrizA, int **matrizB, int linhasA, int colunasA, int colunasB) {
-    int **resultado = alocarMatrizInt(linhasA, colunasB);
+    int **resultado = novaMatrizInt(linhasA, colunasB);
 
     for (int i = 0; i < linhasA; i++) {
         for (int j = 0; j < colunasB; j++) {
@@ -86,7 +86,7 @@ int **multiplicar(int **matrizA, int **matrizB, int linhasA, int colunasA, int c
     return resultado;
 }
 
-double **calcularSimilaridade(const ListaCompras& lista) {
+float **calcularSimilaridade(const ListaCompras& lista) {
     int numClientes = lista.codigoClientes.size();
     int numProdutos = lista.produtos.size();
 
@@ -94,7 +94,7 @@ double **calcularSimilaridade(const ListaCompras& lista) {
     int **matrizTransposta = transposta(matrizCompras, numClientes, numProdutos);
     int **matrizProduto = multiplicar(matrizCompras, matrizTransposta, numClientes, numProdutos, numClientes);
 
-    double **matrizSimilaridade = alocarMatrizDouble(numClientes, numClientes);
+    float **matrizSimilaridade = novaMatrizFloat(numClientes, numClientes);
 
     for (int i = 0; i < numClientes; i++) {
         for (int j = 0; j < numClientes; j++) {
@@ -102,7 +102,7 @@ double **calcularSimilaridade(const ListaCompras& lista) {
             int totalComprasI = matrizProduto[i][i];
 
             if (totalComprasI > 0) {
-                matrizSimilaridade[i][j] = 1 - (double) intersecao / totalComprasI;
+                matrizSimilaridade[i][j] = 1 - (float) intersecao / totalComprasI;
             } else {
                 matrizSimilaridade[i][j] = 1.0;
             }
@@ -116,13 +116,13 @@ double **calcularSimilaridade(const ListaCompras& lista) {
     return matrizSimilaridade;
 }
 
-int clienteMaisSimilar(double **matrizSimilaridade, int numClientes, int clienteIndex) {
+int clienteMaisSimilar(float **matrizSimilaridade, int numClientes, int clienteIndex) {
 
     if (clienteIndex < 0 || clienteIndex >= numClientes) {
         return -1; 
     }
-    
-    double menorSimilaridade = 1.0;
+
+    float menorSimilaridade = 1.0;
     int clienteMaisSimilarIndex = -1;
 
     for (int j = 0; j < numClientes; j++) {

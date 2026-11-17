@@ -6,14 +6,14 @@
 
 typedef struct {
     int produto; 
-    double rank;
+    float rank;
 } Ranking;
 
-int *analogos(double **matrizSimilaridade, int clientes, int indiceCliente, int *numAnalogos);
+int *analogos(float **matrizSimilaridade, int clientes, int indiceCliente, int *numAnalogos);
 int *jaAdquiridos(ListaCompras *lista, int indiceCliente);
 Ranking *criarRank(int numProd);
-void atualizarRank(ListaCompras *lista, double **matrizSimilaridade, int indiceCliente, int *vetorAnalogos, int numAnalogos, int *vetorAdquiridos, Ranking *rank);
+void atualizarRank(ListaCompras *lista, float **matrizSimilaridade, int indiceCliente, int *vetorAnalogos, int numAnalogos, int *vetorAdquiridos, Ranking *rank);
 Ranking *ordenarRank(Ranking *rank, int tamanho, int k, int *vetorAdquiridos, int *candidatos);
-int *recomendar(ListaCompras *lista, double **matrizSimilaridade, int indiceCliente, int k, int *tamanho);
+int *recomendar(ListaCompras *lista, float **matrizSimilaridade, int indiceCliente, int k, int *tamanho);
 
 #endif
