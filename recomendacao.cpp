@@ -26,7 +26,7 @@ int *jaAdquiridos(ListaCompras *lista, int indiceCliente){
         adquiridos[i] = 0;
     }
 
-    for (int i = 0; i < lista->compras[indiceCliente].size(); i++) {
+    for (int i = 0; i < (int) lista->compras[indiceCliente].size(); i++) {
         int indiceproduto = lista->compras[indiceCliente][i];
         adquiridos[indiceproduto] = 1;
     }

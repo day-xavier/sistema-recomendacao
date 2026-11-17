@@ -34,10 +34,7 @@ int main() {
         }
     }
 
-    for (int i = 0; i < numClientes; i++) {
-        free(matrizSimilaridade[i]);
-    }
-    free(matrizSimilaridade);
+    liberarMatrizFloat(matrizSimilaridade, numClientes);
 
     return 0;
 }
