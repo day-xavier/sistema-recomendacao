@@ -32,20 +32,6 @@ int lerDados(char *caminho, ListaCompras *lista) {
             lista->indiceProdutos[codProduto] = lista->produtos.size();
             lista->produtos.push_back(nome);
         }
-    }
-
-    fclose(arquivo);
-
-    arquivo = fopen(caminho, "r");
-    if (arquivo == NULL) {
-        printf("Erro ao reabrir o arquivo %s\n", caminho);
-        return 0;
-    }
-
-    fscanf(arquivo, "%*[^\n]");
-
-    while (fscanf(arquivo, " %8[^,],%19[^,],%19[^,],%199[^\r\n]",
-                  data, cliente, produto, nome) == 4) {
 
         int indiceC = lista->indiceClientes[std::string(cliente)];
         int indiceP = lista->indiceProdutos[std::string(produto)];
@@ -59,6 +45,7 @@ int lerDados(char *caminho, ListaCompras *lista) {
         if (ha == 0) {
             lista->compras[indiceC].push_back(indiceP);
         }
+
     }
 
     fclose(arquivo);
