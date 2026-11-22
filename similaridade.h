@@ -20,4 +20,6 @@ float **calcularSimilaridade(const ListaCompras& lista);
 
 int clienteMaisSimilar(float **matrizSimilaridade, int numClientes, int clienteIndex);
 
+void printarSimilaridade(ListaCompras *lista, char *codigos[]);
+
 #endif
