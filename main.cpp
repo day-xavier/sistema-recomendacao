@@ -1,24 +1,44 @@
-#include <stdio.h>
 #include "listaCompras.h"
+#include "similaridade.h"
+#include "recomendacao.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 5) {
-        printf("Uso: %s <arquivo.csv> <cliente1> <cliente2> <cliente3>\n", argv[0]);
+    if (argc < 4) {
+        printf("Uso:\n");
+        printf("  %s 1 <arquivo.csv> <cliente1> [cliente2 ...]      (compras)\n", argv[0]);
+        printf("  %s 2 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade)\n", argv[0]);
+        printf("  %s 3 <arquivo.csv> <k> <cliente1> [cliente2 ...]  (recomendacoes)\n", argv[0]);
         return 1;
     }
+
+    int escolha = atoi(argv[1]);
 
     ListaCompras lista;
-    if (lerDados(argv[1], &lista) == 0) {
+    if (lerDados(argv[2], &lista) == 0) {
         return 1;
     }
 
-    printf("Base carregada: %d clientes e %d produtos\n\n",
-           (int) lista.codigoClientes.size(), (int) lista.produtos.size());
 
-    for (int i = 2; i < argc; i++) {
-        printarCompras(&lista, argv[i]);
+    switch (escolha){
+    case 1:
+        for (int i = 3; i < argc; i++) {
+            printarCompras(&lista, argv[i]);
+        }
+        break;
+
+    case 2:
+    printarSimilaridade(&lista, &argv[3]);
+        break;
+
+    case 3:
+    printarRecomendacoes(&lista, atoi(argv[3]), &argv[4]);
+        break;
     }
+
 
     return 0;
 }

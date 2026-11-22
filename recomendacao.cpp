@@ -1,6 +1,10 @@
 #include "recomendacao.h"
+
+#include <iostream>
 #include <stdlib.h>
 #include <algorithm>
+
+using namespace std;
 
 int *analogos(float **matrizSimilaridade, int clientes, int indiceCliente, int *numAnalogos){
     int *vetorAnalogos = (int *) malloc(clientes* sizeof(int));
@@ -106,4 +110,39 @@ int *recomendar(ListaCompras *lista, float **matrizSimilaridade, int indiceClien
 
     *tamanho = candidatos;
     return recomendacoes;
+}
+
+void printarRecomendacoes(ListaCompras *lista, int k, char *codigos[]) {
+
+    cout << "Numero de clientes: " << lista->codigoClientes.size() << endl;
+    cout << "Numero de produtos: " << lista->produtos.size() << endl;
+
+    int numClientes = lista->codigoClientes.size();
+    float **matrizSimilaridade = calcularSimilaridade(*lista);
+
+    for (int j = 0; codigos[j] != NULL; j++) {
+        string codigo(codigos[j]);
+
+        if (lista->indiceClientes.find(codigo) != lista->indiceClientes.end()) {
+            int indiceCliente = lista->indiceClientes[codigo];
+            int tamanho = 0;
+            int *recomendacoes = recomendar(lista, matrizSimilaridade, indiceCliente, k, &tamanho);
+
+            cout << "Recomendacoes para o cliente " << codigo << ":" << endl;
+            for (int i = 0; i < tamanho; i++) {
+                cout << "  " << (i + 1) << ". " << lista->produtos[recomendacoes[i]] << endl;
+            }
+            cout << endl;
+
+            if (tamanho == 0) {
+                cout << "Nenhuma recomendacao disponivel para o cliente " << codigo << "." << endl;
+            }
+
+            free(recomendacoes);
+        } else {
+            cout << "Cliente com codigo " << codigo << " nao encontrado." << endl;
+        }
+    }
+
+    liberarMatrizFloat(matrizSimilaridade, numClientes);
 }

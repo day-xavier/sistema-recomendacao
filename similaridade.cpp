@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <iostream>
+
 #include "similaridade.h"
 
 using namespace std;
@@ -133,4 +135,29 @@ int clienteMaisSimilar(float **matrizSimilaridade, int numClientes, int clienteI
     }
 
     return clienteMaisSimilarIndex;
+}
+
+void printarSimilaridade(ListaCompras *lista, char *codigos[]){
+
+    cout << "Numero de clientes: " << lista->codigoClientes.size() << endl;
+    cout << "Numero de produtos: " << lista->produtos.size() << endl;
+
+    int numClientes = lista->codigoClientes.size();
+    float **matrizSimilaridade = calcularSimilaridade(*lista);
+
+    for (int i = 0; codigos[i] != NULL; i++) {
+        string codigo(codigos[i]);
+
+        int clienteIndex = lista->indiceClientes[codigo];
+        int clienteMaisSimilarIndex = clienteMaisSimilar(matrizSimilaridade, numClientes, clienteIndex);
+
+        if (clienteMaisSimilarIndex != -1) {
+            cout << "Cliente mais similar ao cliente " << lista->codigoClientes[clienteIndex] << ": "
+                      << lista->codigoClientes[clienteMaisSimilarIndex] << " (S = " << matrizSimilaridade[clienteIndex][clienteMaisSimilarIndex] << ")" << endl;
+        } else {
+            cout << "Cliente " << lista->codigoClientes[clienteIndex] << " nao possui clientes similares." << endl;
+        }
+    }
+
+    liberarMatrizFloat(matrizSimilaridade, numClientes);
 }
