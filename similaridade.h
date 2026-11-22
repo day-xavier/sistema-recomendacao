@@ -26,4 +26,6 @@ int **calculoMatrizEficiente(int **matrizA, int linhasA, int colunasA, int colun
 
 float **calcularSimilaridadeEficiente(const ListaCompras& lista);
 
+void printarSimilaridadeEficiente(ListaCompras *lista, char *codigos[]);
+
 #endif

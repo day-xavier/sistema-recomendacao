@@ -10,8 +10,9 @@ int main(int argc, char *argv[]) {
     if (argc < 4) {
         printf("Uso:\n");
         printf("  %s 1 <arquivo.csv> <cliente1> [cliente2 ...]      (compras)\n", argv[0]);
-        printf("  %s 2 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade)\n", argv[0]);
-        printf("  %s 3 <arquivo.csv> <k> <cliente1> [cliente2 ...]  (recomendacoes)\n", argv[0]);
+        printf("  %s 2 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade padrão)\n", argv[0]);
+        printf("  %s 3 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade eficiente)\n", argv[0]);
+        printf("  %s 4 <arquivo.csv> <k> <cliente1> [cliente2 ...]  (recomendacoes)\n", argv[0]);
         return 1;
     }
 
@@ -35,6 +36,10 @@ int main(int argc, char *argv[]) {
         break;
 
     case 3:
+    printarSimilaridadeEficiente(&lista, &argv[3]);
+        break;
+
+    case 4:
     printarRecomendacoes(&lista, atoi(argv[3]), &argv[4]);
         break;
     }

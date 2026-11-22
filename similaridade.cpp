@@ -1,9 +1,14 @@
 #include <stdlib.h>
 #include <iostream>
+#include <ctime>
 
 #include "similaridade.h"
 
 using namespace std;
+
+double contagemTempo(clock_t inicio) {
+    return double(clock() - inicio) / CLOCKS_PER_SEC;
+}
 
 int **novaMatrizInt(int linhas, int colunas) {
     int **matriz = (int **) malloc(linhas * sizeof(int *));
@@ -143,7 +148,83 @@ void printarSimilaridade(ListaCompras *lista, char *codigos[]){
     cout << "Numero de produtos: " << lista->produtos.size() << endl;
 
     int numClientes = lista->codigoClientes.size();
+    clock_t inicio = clock();
     float **matrizSimilaridade = calcularSimilaridade(*lista);
+    cout << "Tempo: " << contagemTempo(inicio) << " s" << endl;
+
+    for (int i = 0; codigos[i] != NULL; i++) {
+        string codigo(codigos[i]);
+
+        int clienteIndex = lista->indiceClientes[codigo];
+        int clienteMaisSimilarIndex = clienteMaisSimilar(matrizSimilaridade, numClientes, clienteIndex);
+
+        if (clienteMaisSimilarIndex != -1) {
+            cout << "Cliente mais similar ao cliente " << lista->codigoClientes[clienteIndex] << ": "
+                      << lista->codigoClientes[clienteMaisSimilarIndex] << " (S = " << matrizSimilaridade[clienteIndex][clienteMaisSimilarIndex] << ")" << endl;
+        } else {
+            cout << "Cliente " << lista->codigoClientes[clienteIndex] << " nao possui clientes similares." << endl;
+        }
+    }
+
+    liberarMatrizFloat(matrizSimilaridade, numClientes);
+}
+
+int **calculoMatrizEficiente(int **matrizA, int linhasA, int colunasA){
+    int **matrizEficaz = novaMatrizInt(linhasA, linhasA);
+
+    for (int i = 0; i < linhasA; i++) {
+        for (int j = i; j < linhasA; j++) {
+            int soma = 0;
+
+            for (int k = 0; k < colunasA; k++) {
+                soma += matrizA[i][k] * matrizA[j][k];
+            }
+
+            matrizEficaz[i][j] = soma;
+            matrizEficaz[j][i] = soma;
+        }
+    }
+
+    return matrizEficaz;
+}
+
+float **calcularSimilaridadeEficiente(const ListaCompras& lista) {
+    int numClientes = lista.codigoClientes.size();
+    int numProdutos = lista.produtos.size();
+
+    int **matrizCompras = montarMatrizCompras(lista);
+    int **matrizProduto = calculoMatrizEficiente(matrizCompras, numClientes, numProdutos);
+
+    float **matrizSimilaridade = novaMatrizFloat(numClientes, numClientes);
+
+    for (int i = 0; i < numClientes; i++) {
+        for (int j = 0; j < numClientes; j++) {
+            int intersecao = matrizProduto[i][j];
+            int totalComprasI = matrizProduto[i][i];
+
+            if (totalComprasI > 0) {
+                matrizSimilaridade[i][j] = 1 - (float) intersecao / totalComprasI;
+            } else {
+                matrizSimilaridade[i][j] = 1.0;
+            }
+        }
+    }
+
+    liberarMatrizInt(matrizCompras, numClientes);
+    liberarMatrizInt(matrizProduto, numClientes);
+
+    return matrizSimilaridade;
+}
+
+void printarSimilaridadeEficiente(ListaCompras *lista, char *codigos[]){
+
+    cout << "Numero de clientes: " << lista->codigoClientes.size() << endl;
+    cout << "Numero de produtos: " << lista->produtos.size() << endl;
+
+    int numClientes = lista->codigoClientes.size();
+    clock_t inicio = clock();
+    float **matrizSimilaridade = calcularSimilaridadeEficiente(*lista);
+    cout << "Tempo: " << contagemTempo(inicio) << " s" << endl;
 
     for (int i = 0; codigos[i] != NULL; i++) {
         string codigo(codigos[i]);
