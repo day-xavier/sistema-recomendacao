@@ -22,4 +22,8 @@ int clienteMaisSimilar(float **matrizSimilaridade, int numClientes, int clienteI
 
 void printarSimilaridade(ListaCompras *lista, char *codigos[]);
 
+int **calculoMatrizEficiente(int **matrizA, int linhasA, int colunasA, int colunasB);
+
+float **calcularSimilaridadeEficiente(const ListaCompras& lista);
+
 #endif
