@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <ctime>
+#include <algorithm>
 
 #include "similaridade.h"
 
@@ -241,4 +242,222 @@ void printarSimilaridadeEficiente(ListaCompras *lista, char *codigos[]){
     }
 
     liberarMatrizFloat(matrizSimilaridade, numClientes);
+}
+
+MatrizEsparsa montarComprasEsparsa(const ListaCompras& lista) {
+    MatrizEsparsa matrizEsparsa;
+    matrizEsparsa.numLinhas = lista.codigoClientes.size();
+    matrizEsparsa.numColunas = lista.produtos.size();
+    matrizEsparsa.naoNulos = 0;
+
+    for (int i = 0; i < matrizEsparsa.numLinhas; i++) {
+        matrizEsparsa.naoNulos += (int)lista.compras[i].size();
+    }
+
+    matrizEsparsa.valores = (float *) malloc(matrizEsparsa.naoNulos * sizeof(float));
+    matrizEsparsa.colunas = (int *) malloc(matrizEsparsa.naoNulos * sizeof(int));
+    matrizEsparsa.inicioLinhas = (int *) malloc((matrizEsparsa.numLinhas + 1) * sizeof(int));
+
+    int indiceNaoNulo = 0;
+    for (int i = 0; i < matrizEsparsa.numLinhas; i++) {
+        matrizEsparsa.inicioLinhas[i] = indiceNaoNulo;
+        for (int p: lista.compras[i]) {
+            matrizEsparsa.valores[indiceNaoNulo] = 1; 
+            matrizEsparsa.colunas[indiceNaoNulo] = p; 
+            indiceNaoNulo++;
+        }
+    }
+
+    matrizEsparsa.inicioLinhas[matrizEsparsa.numLinhas] = indiceNaoNulo;
+
+    for (int i = 0; i < matrizEsparsa.numLinhas; i++) {
+        std::sort(&matrizEsparsa.colunas[matrizEsparsa.inicioLinhas[i]], &matrizEsparsa.colunas[matrizEsparsa.inicioLinhas[i + 1]]);
+    }
+
+    return matrizEsparsa;
+}
+
+float produtoLinhas(const MatrizEsparsa& matriz, int i, int j) {
+    float soma = 0.0;
+
+    int inicioI = matriz.inicioLinhas[i];
+    int fimI = matriz.inicioLinhas[i + 1];
+    int inicioJ = matriz.inicioLinhas[j];
+    int fimJ = matriz.inicioLinhas[j + 1];
+
+    int indiceI = inicioI;
+    int indiceJ = inicioJ;
+
+    while (indiceI < fimI && indiceJ < fimJ) {
+        if (matriz.colunas[indiceI] == matriz.colunas[indiceJ]) {
+            soma += matriz.valores[indiceI] * matriz.valores[indiceJ];
+            indiceI++;
+            indiceJ++;
+        } else if (matriz.colunas[indiceI] < matriz.colunas[indiceJ]) {
+            indiceI++;
+        } else {
+            indiceJ++;
+        }
+    }
+
+    return soma;
+}
+
+MatrizEsparsa multiplicarTranspostaEsparsa(const MatrizEsparsa& matriz) {
+    MatrizEsparsa resultado;
+    resultado.numLinhas = matriz.numLinhas;
+    resultado.numColunas = matriz.numLinhas; 
+    resultado.naoNulos = 0;
+
+    for (int i = 0; i < matriz.numLinhas; i++) {
+        for (int j = 0; j < matriz.numLinhas; j++) {
+            float produto = produtoLinhas(matriz, i, j);
+            if (produto != 0) {
+                resultado.naoNulos++;
+            }
+        }
+    }
+
+    resultado.valores = (float *) malloc(resultado.naoNulos * sizeof(float));
+    resultado.colunas = (int *) malloc(resultado.naoNulos * sizeof(int));
+    resultado.inicioLinhas = (int *) malloc((resultado.numLinhas + 1) * sizeof(int));
+
+    int indiceNaoNulo = 0;
+    for (int i = 0; i < matriz.numLinhas; i++) {
+        resultado.inicioLinhas[i] = indiceNaoNulo;
+        for (int j = 0; j < matriz.numLinhas; j++) {
+            float produto = produtoLinhas(matriz, i, j);
+            if (produto != 0) {
+                resultado.valores[indiceNaoNulo] = produto;
+                resultado.colunas[indiceNaoNulo] = j;
+                indiceNaoNulo++;
+            }
+        }
+    }
+    resultado.inicioLinhas[resultado.numLinhas] = indiceNaoNulo;
+
+    return resultado;
+}
+
+MatrizEsparsa calcularSimilaridadeEsparsa(const ListaCompras& lista) {
+    MatrizEsparsa comprasEsparsa = montarComprasEsparsa(lista);
+    MatrizEsparsa similaridadeEsparsa = multiplicarTranspostaEsparsa(comprasEsparsa);
+
+    for (int i = 0; i < similaridadeEsparsa.numLinhas; i++) {
+        float totalComprasI = produtoLinhas(comprasEsparsa, i, i);
+        for (int idx = similaridadeEsparsa.inicioLinhas[i]; idx < similaridadeEsparsa.inicioLinhas[i + 1]; idx++) {
+            float intersecao = similaridadeEsparsa.valores[idx];
+            
+            if (totalComprasI > 0) {
+                similaridadeEsparsa.valores[idx] = 1 - intersecao / totalComprasI;
+            } else {
+                similaridadeEsparsa.valores[idx] = 1.0;
+            }
+        }
+    }
+
+    free(comprasEsparsa.valores);
+    free(comprasEsparsa.colunas);
+    free(comprasEsparsa.inicioLinhas);
+
+    return similaridadeEsparsa;
+}
+
+int clienteMaisSimilarEsparsa(const MatrizEsparsa& similaridade, int clienteIndex) {
+    if (clienteIndex < 0 || clienteIndex >= similaridade.numLinhas) {
+        return -1; 
+    }
+
+    float menorSimilaridade = 1.0;
+    int clienteMaisSimilarIndex = -1;
+
+    int inicio = similaridade.inicioLinhas[clienteIndex];
+    int fim = similaridade.inicioLinhas[clienteIndex + 1];
+
+    for (int idx = inicio; idx < fim; idx++) {
+        int j = similaridade.colunas[idx];
+        float valorSimilaridade = similaridade.valores[idx];
+
+        if (j != clienteIndex && valorSimilaridade < menorSimilaridade) {
+            menorSimilaridade = valorSimilaridade;
+            clienteMaisSimilarIndex = j;
+        }
+    }
+
+    return clienteMaisSimilarIndex;
+}
+
+void liberarMatrizEsparsa(MatrizEsparsa& matriz) {
+    free(matriz.valores);
+    free(matriz.colunas);
+    free(matriz.inicioLinhas);
+    matriz.valores = NULL;
+    matriz.colunas = NULL;
+    matriz.inicioLinhas = NULL;
+    matriz.numLinhas = 0;
+    matriz.numColunas = 0;
+    matriz.naoNulos = 0;
+}
+
+long long memoriaDensa(int numLinhas, int numColunas) {
+        return (long long) numLinhas * numColunas * sizeof(float) +
+        (long long) numLinhas * sizeof(float *);
+}
+
+long long memoriaEsparsa(const MatrizEsparsa& matriz) {
+        return (long long) matriz.naoNulos * sizeof(float) +
+        (long long) matriz.naoNulos * sizeof(int) +
+        (long long) (matriz.numLinhas + 1) * sizeof(int);
+}
+
+void printarComparacaoEsparsa(ListaCompras *lista, char *codigos[]){
+    cout << "Numero de clientes: " << lista->codigoClientes.size() << endl;
+    cout << "Numero de produtos: " << lista->produtos.size() << endl;
+
+    int numClientes = lista->codigoClientes.size();
+    clock_t inicioDensa = clock();
+    float **matrizDensa = calcularSimilaridadeEficiente(*lista);
+    cout << "Tempo (densa): " << contagemTempo(inicioDensa) << " s" << endl;
+    clock_t inicioEsparsa = clock();
+    MatrizEsparsa matrizSimilaridadeEsparsa = calcularSimilaridadeEsparsa(*lista);
+    cout << "Tempo (esparsa): " << contagemTempo(inicioEsparsa) << " s" << endl;
+
+    long long memoriaDensaBytes = memoriaDensa(numClientes, numClientes);
+    long long memoriaEsparsaBytes = memoriaEsparsa(matrizSimilaridadeEsparsa);
+
+    cout << "Memoria (densa): " << memoriaDensaBytes / (1024.0 * 1024.0) << " MB" << endl;
+    cout << "Memoria (esparsa): " << memoriaEsparsaBytes / (1024.0 * 1024.0) << " MB" << endl;
+
+    for (int i = 0; codigos[i] != NULL; i++) {
+        string codigo(codigos[i]);
+
+        int clienteIndex = lista->indiceClientes[codigo];
+        int clienteMaisSimilarIndexDensa = clienteMaisSimilar(matrizDensa, numClientes, clienteIndex);
+        int clienteMaisSimilarIndexEsparsa = clienteMaisSimilarEsparsa(matrizSimilaridadeEsparsa, clienteIndex);
+
+        cout << "Cliente: " << lista->codigoClientes[clienteIndex] << endl;
+        if (clienteMaisSimilarIndexDensa != -1) {
+            cout << "  Mais similar (densa): " << lista->codigoClientes[clienteMaisSimilarIndexDensa]
+                      << " (S = " << matrizDensa[clienteIndex][clienteMaisSimilarIndexDensa] << ")" << endl;
+        } else {
+            cout << "  Mais similar (densa): Nenhum" << endl;
+        }
+
+        if (clienteMaisSimilarIndexEsparsa != -1) {
+            float valorSimilaridadeEsparsa = 0.0;
+            for (int idx = matrizSimilaridadeEsparsa.inicioLinhas[clienteIndex]; idx < matrizSimilaridadeEsparsa.inicioLinhas[clienteIndex + 1]; idx++) {
+                if (matrizSimilaridadeEsparsa.colunas[idx] == clienteMaisSimilarIndexEsparsa) {
+                    valorSimilaridadeEsparsa = matrizSimilaridadeEsparsa.valores[idx];
+                    break;
+                }
+            }
+            cout << "  Mais similar (esparsa): " << lista->codigoClientes[clienteMaisSimilarIndexEsparsa]
+                      << " (S = " << valorSimilaridadeEsparsa << ")" << endl;
+        } else {
+            cout << "  Mais similar (esparsa): Nenhum" << endl;
+        }
+    }
+
+    liberarMatrizFloat(matrizDensa, numClientes);
+    liberarMatrizEsparsa(matrizSimilaridadeEsparsa);
 }
