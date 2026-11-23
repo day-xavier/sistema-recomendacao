@@ -430,6 +430,11 @@ void printarComparacaoEsparsa(ListaCompras *lista, char *codigos[]){
 
     for (int i = 0; codigos[i] != NULL; i++) {
         string codigo(codigos[i]);
+        
+        if (lista->indiceClientes.find(codigo) == lista->indiceClientes.end()) {
+            cout << "Cliente " << codigo << " nao encontrado." << endl;
+            continue;
+        }
 
         int clienteIndex = lista->indiceClientes[codigo];
         int clienteMaisSimilarIndexDensa = clienteMaisSimilar(matrizDensa, numClientes, clienteIndex);
