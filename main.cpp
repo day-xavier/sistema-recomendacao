@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     if (argc < 4) {
         printf("Uso:\n");
         printf("  %s 1 <arquivo.csv> <cliente1> [cliente2 ...]      (compras)\n", argv[0]);
-        printf("  %s 2 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade padrão)\n", argv[0]);
+        printf("  %s 2 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade padrao)\n", argv[0]);
         printf("  %s 3 <arquivo.csv> <cliente1> [cliente2 ...]      (similaridade eficiente)\n", argv[0]);
         printf("  %s 4 <arquivo.csv> <k> <cliente1> [cliente2 ...]  (recomendacoes)\n", argv[0]);
         printf("  %s 5 <qtdArquivos> <arquivo1.csv> ... <cliente1> [cliente2 ...]  (densa x esparsa)\n", argv[0]);
