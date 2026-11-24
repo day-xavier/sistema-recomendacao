@@ -248,14 +248,14 @@ MatrizEsparsa montarComprasEsparsa(const ListaCompras& lista) {
     MatrizEsparsa matrizEsparsa;
     matrizEsparsa.numLinhas = lista.codigoClientes.size();
     matrizEsparsa.numColunas = lista.produtos.size();
-    matrizEsparsa.naoNulos = 0;
+    int naoNulos = 0;
 
     for (int i = 0; i < matrizEsparsa.numLinhas; i++) {
-        matrizEsparsa.naoNulos += (int)lista.compras[i].size();
+        naoNulos += (int)lista.compras[i].size();
     }
 
-    matrizEsparsa.values = (float *) malloc(matrizEsparsa.naoNulos * sizeof(float));
-    matrizEsparsa.col_index = (int *) malloc(matrizEsparsa.naoNulos * sizeof(int));
+    matrizEsparsa.values = (float *) malloc(naoNulos * sizeof(float));
+    matrizEsparsa.col_index = (int *) malloc(naoNulos * sizeof(int));
     matrizEsparsa.row_ptr = (int *) malloc((matrizEsparsa.numLinhas + 1) * sizeof(int));
 
     int indiceNaoNulo = 0;
@@ -307,19 +307,19 @@ MatrizEsparsa multiplicarTranspostaEsparsa(const MatrizEsparsa& matriz) {
     MatrizEsparsa resultado;
     resultado.numLinhas = matriz.numLinhas;
     resultado.numColunas = matriz.numLinhas; 
-    resultado.naoNulos = 0;
+    int naoNulos = 0;
 
     for (int i = 0; i < matriz.numLinhas; i++) {
         for (int j = 0; j < matriz.numLinhas; j++) {
             float produto = produtoLinhas(matriz, i, j);
             if (produto != 0) {
-                resultado.naoNulos++;
+                naoNulos++;
             }
         }
     }
 
-    resultado.values = (float *) malloc(resultado.naoNulos * sizeof(float));
-    resultado.col_index = (int *) malloc(resultado.naoNulos * sizeof(int));
+    resultado.values = (float *) malloc(naoNulos * sizeof(float));
+    resultado.col_index = (int *) malloc(naoNulos * sizeof(int));
     resultado.row_ptr = (int *) malloc((resultado.numLinhas + 1) * sizeof(int));
 
     int indiceNaoNulo = 0;
@@ -396,7 +396,6 @@ void liberarMatrizEsparsa(MatrizEsparsa& matriz) {
     matriz.row_ptr = NULL;
     matriz.numLinhas = 0;
     matriz.numColunas = 0;
-    matriz.naoNulos = 0;
 }
 
 double memoriaDensa(int numLinhas, int numColunas) {
@@ -405,8 +404,8 @@ double memoriaDensa(int numLinhas, int numColunas) {
 }
 
 double memoriaEsparsa(const MatrizEsparsa& matriz) {
-        return (double) matriz.naoNulos * sizeof(float) +
-        (double) matriz.naoNulos * sizeof(int) +
+        return (double) matriz.row_ptr[matriz.numLinhas] * sizeof(float) +
+        (double) matriz.row_ptr[matriz.numLinhas] * sizeof(int) +
         (double) (matriz.numLinhas + 1) * sizeof(int);
 }
 
@@ -440,26 +439,12 @@ void printarComparacaoEsparsa(ListaCompras *lista, char *codigos[]){
         int clienteMaisSimilarIndexDensa = clienteMaisSimilar(matrizDensa, numClientes, clienteIndex);
         int clienteMaisSimilarIndexEsparsa = clienteMaisSimilarEsparsa(matrizSimilaridadeEsparsa, clienteIndex);
 
-        cout << "Cliente: " << lista->codigoClientes[clienteIndex] << endl;
-        if (clienteMaisSimilarIndexDensa != -1) {
-            cout << "  Mais similar (densa): " << lista->codigoClientes[clienteMaisSimilarIndexDensa]
-                      << " (S = " << matrizDensa[clienteIndex][clienteMaisSimilarIndexDensa] << ")" << endl;
+        if (clienteMaisSimilarIndexDensa == -1 || clienteMaisSimilarIndexEsparsa == -1) {
+            cout << "Cliente " << lista->codigoClientes[clienteIndex] << " nao possui clientes similares." << endl;
         } else {
-            cout << "  Mais similar (densa): Nenhum" << endl;
-        }
-
-        if (clienteMaisSimilarIndexEsparsa != -1) {
-            float valorSimilaridadeEsparsa = 0.0;
-            for (int idx = matrizSimilaridadeEsparsa.row_ptr[clienteIndex]; idx < matrizSimilaridadeEsparsa.row_ptr[clienteIndex + 1]; idx++) {
-                if (matrizSimilaridadeEsparsa.col_index[idx] == clienteMaisSimilarIndexEsparsa) {
-                    valorSimilaridadeEsparsa = matrizSimilaridadeEsparsa.values[idx];
-                    break;
-                }
-            }
-            cout << "  Mais similar (esparsa): " << lista->codigoClientes[clienteMaisSimilarIndexEsparsa]
-                      << " (S = " << valorSimilaridadeEsparsa << ")" << endl;
-        } else {
-            cout << "  Mais similar (esparsa): Nenhum" << endl;
+            cout << "Cliente mais similar ao cliente " << lista->codigoClientes[clienteIndex] << ":" << endl;
+            cout << "  (densa)  " << lista->codigoClientes[clienteMaisSimilarIndexDensa] << " (S = " << matrizDensa[clienteIndex][clienteMaisSimilarIndexDensa] << ")" << endl;
+            cout << "  (esparsa) " << lista->codigoClientes[clienteMaisSimilarIndexEsparsa] << endl;
         }
     }
 

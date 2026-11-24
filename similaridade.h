@@ -5,7 +5,6 @@
 typedef struct {
     int numLinhas;
     int numColunas;
-    int naoNulos;
     float *values;
     int *col_index;
     int *row_ptr;
